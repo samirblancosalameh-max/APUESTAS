@@ -1,20 +1,6 @@
 {
     "partidos": [
         {
-            "equipo1": "COLOMBIA",
-            "equipo2": "REPUBLICA DEL CONGO",
-            "fecha": "23/06/2026",
-            "hora": "9 pm",
-            "lugar": "GUADALAJARA"
-        },
-        {
-            "equipo1": "ARGENTINA",
-            "equipo2": "AUSTRIA",
-            "fecha": "22/06/2026",
-            "hora": "12 PM",
-            "lugar": "DALLAS"
-        },
-        {
             "equipo1": "BRASIL",
             "equipo2": "SENEGAL",
             "fecha": "24/06/2026",
@@ -23,9 +9,7 @@
         }
     ],
     "apuestas_por_partido": {
-        "0": [],
-        "1": [],
-        "2": [
+        "0": [
             {
                 "nombre": "Andres",
                 "dinero": 2500,

@@ -145,6 +145,13 @@
             </button>
         </div>
     </form>
+
+    <!-- Delete Form -->
+    <form method="POST" action="/borrar_apuesta/{{ partido_id }}/{{ apuesta_id }}" id="deleteForm" style="margin-top: 1rem;">
+        <button type="button" class="btn btn-danger" style="width: 100%; background-color: #ef4444; color: white;" onclick="confirmarEliminacion()">
+            <i class="fa-solid fa-trash"></i> Eliminar Apuesta
+        </button>
+    </form>
 </div>
 
 <script>
@@ -170,6 +177,12 @@
         }
 
         return true;
+    }
+
+    function confirmarEliminacion() {
+        if (confirm('¿Estás seguro de que deseas eliminar esta apuesta? Esta acción no se puede deshacer.')) {
+            document.getElementById('deleteForm').submit();
+        }
     }
 </script>
 {% endblock %}

@@ -100,7 +100,9 @@ def borrar_partido(partido_id):
             elif old_id > partido_id:
                 nuevas_apuestas[old_id - 1] = apuestas
         
-        apuestas_por_partido = nuevas_apuestas
+        # Actualizar la variable global correctamente
+        apuestas_por_partido.clear()
+        apuestas_por_partido.update(nuevas_apuestas)
 
         guardar_datos()
         flash(f"Partido {equipo1} vs {equipo2} eliminado.", "success")
