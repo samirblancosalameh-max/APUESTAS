@@ -86,7 +86,8 @@ def apostar(partido_id):
 
 @app.route("/borrar_partido/<int:partido_id>", methods=["POST"])
 def borrar_partido(partido_id):
-    global apuestas_por_partido
+    global partidos, apuestas_por_partido
+    cargar_datos()
     if 0 <= partido_id < len(partidos):
         equipo1 = partidos[partido_id]["equipo1"]
         equipo2 = partidos[partido_id]["equipo2"]
@@ -142,6 +143,8 @@ def editar_apuesta(partido_id, apuesta_id):
 
 @app.route("/borrar_apuesta/<int:partido_id>/<int:apuesta_id>", methods=["POST"])
 def borrar_apuesta(partido_id, apuesta_id):
+    global partidos, apuestas_por_partido
+    cargar_datos()
     if partido_id not in apuestas_por_partido or apuesta_id < 0 or apuesta_id >= len(apuestas_por_partido[partido_id]):
         flash("La apuesta no existe.", "error")
         return redirect(url_for("index"))
