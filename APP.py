@@ -92,13 +92,14 @@ def borrar_partido(partido_id):
         equipo2 = partidos[partido_id]["equipo2"]
         partidos.pop(partido_id)
 
-        # Reorganizar indices de apuestas
+        # Reorganizar los índices de las apuestas
         nuevas_apuestas = {}
-        for i in range(len(partidos) + 1):
-            if i < partido_id:
-                nuevas_apuestas[i] = apuestas_por_partido.get(i, [])
-            elif i > partido_id:
-                nuevas_apuestas[i - 1] = apuestas_por_partido.get(i, [])
+        for old_id, apuestas in sorted(apuestas_por_partido.items()):
+            if old_id < partido_id:
+                nuevas_apuestas[old_id] = apuestas
+            elif old_id > partido_id:
+                nuevas_apuestas[old_id - 1] = apuestas
+        
         apuestas_por_partido = nuevas_apuestas
 
         guardar_datos()
