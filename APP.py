@@ -100,6 +100,7 @@ def borrar_partido(partido_id):
                 nuevas_apuestas[old_id] = apuestas
             elif old_id > partido_id:
                 nuevas_apuestas[old_id - 1] = apuestas
+            # Si old_id == partido_id, no se añade (se eliminan las apuestas)
         
         # Actualizar la variable global correctamente
         apuestas_por_partido.clear()
