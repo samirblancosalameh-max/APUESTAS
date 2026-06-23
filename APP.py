@@ -87,29 +87,37 @@ def apostar(partido_id):
 @app.route("/borrar_partido/<int:partido_id>", methods=["POST"])
 def borrar_partido(partido_id):
     global partidos, apuestas_por_partido
-    cargar_datos()
-    if 0 <= partido_id < len(partidos):
-        equipo1 = partidos[partido_id]["equipo1"]
-        equipo2 = partidos[partido_id]["equipo2"]
-        partidos.pop(partido_id)
-
-        # Reorganizar los índices de las apuestas
-        nuevas_apuestas = {}
-        for old_id, apuestas in sorted(apuestas_por_partido.items()):
-            if old_id < partido_id:
-                nuevas_apuestas[old_id] = apuestas
-            elif old_id > partido_id:
-                nuevas_apuestas[old_id - 1] = apuestas
-            # Si old_id == partido_id, no se añade (se eliminan las apuestas)
-        
-        # Actualizar la variable global correctamente
-        apuestas_por_partido.clear()
-        apuestas_por_partido.update(nuevas_apuestas)
-
-        guardar_datos()
-        flash(f"Partido {equipo1} vs {equipo2} eliminado.", "success")
-    else:
-        flash("El partido no existe.", "error")
+    try:
+        cargar_datos()
+        if 0 <= partido_id < len(partidos):
+            equipo1 = partidos[partido_id]["equipo1"]
+            equipo2 = partidos[partido_id]["equipo2"]
+            
+            # Eliminar el partido
+            partidos.pop(partido_id)
+            
+            # Eliminar las apuestas del partido eliminado
+            if partido_id in apuestas_por_partido:
+                del apuestas_por_partido[partido_id]
+            
+            # Re-indexar las apuestas de los partidos posteriores
+            apuestas_renumeradas = {}
+            for old_id, apuestas in sorted(apuestas_por_partido.items()):
+                if old_id < partido_id:
+                    apuestas_renumeradas[old_id] = apuestas
+                elif old_id > partido_id:
+                    apuestas_renumeradas[old_id - 1] = apuestas
+            
+            apuestas_por_partido.clear()
+            apuestas_por_partido.update(apuestas_renumeradas)
+            
+            guardar_datos()
+            flash(f"Partido {equipo1} vs {equipo2} eliminado.", "success")
+        else:
+            flash("El partido no existe.", "error")
+    except Exception as e:
+        flash(f"Error al eliminar: {str(e)}", "error")
+        app.logger.error(f"Error en borrar_partido: {str(e)}")
     return redirect(url_for("index"))
 
 @app.route("/editar_apuesta/<int:partido_id>/<int:apuesta_id>", methods=["GET", "POST"])
@@ -145,14 +153,18 @@ def editar_apuesta(partido_id, apuesta_id):
 @app.route("/borrar_apuesta/<int:partido_id>/<int:apuesta_id>", methods=["POST"])
 def borrar_apuesta(partido_id, apuesta_id):
     global partidos, apuestas_por_partido
-    cargar_datos()
-    if partido_id not in apuestas_por_partido or apuesta_id < 0 or apuesta_id >= len(apuestas_por_partido[partido_id]):
-        flash("La apuesta no existe.", "error")
-        return redirect(url_for("index"))
+    try:
+        cargar_datos()
+        if partido_id not in apuestas_por_partido or apuesta_id < 0 or apuesta_id >= len(apuestas_por_partido[partido_id]):
+            flash("La apuesta no existe.", "error")
+            return redirect(url_for("index"))
 
-    apuestas_por_partido[partido_id].pop(apuesta_id)
-    guardar_datos()
-    flash("Apuesta eliminada.", "success")
+        apuestas_por_partido[partido_id].pop(apuesta_id)
+        guardar_datos()
+        flash("Apuesta eliminada.", "success")
+    except Exception as e:
+        flash(f"Error al eliminar apuesta: {str(e)}", "error")
+        app.logger.error(f"Error en borrar_apuesta: {str(e)}")
     return redirect(url_for("index"))
 
 if __name__ == "__main__":
