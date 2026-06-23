@@ -1,61 +1,19 @@
-from flask import Flask, render_template, request, redirect, flash, url_for
-from pymongo import MongoClient
-from bson.objectid import ObjectId
+from flask import Flask, render_template, request, redirect, flash, url_for, jsonify
 import os
 
 app = Flask(__name__)
 app.secret_key = "apuestas_mundial_secret_key_2026_xyz"
 
-# Configurar MongoDB
-MONGODB_URI = os.environ.get("MONGODB_URI", "mongodb://localhost:27017/apuestas_mundial")
-client = MongoClient(MONGODB_URI)
-db = client.get_default_database()
-partidos_collection = db.partidos
-apuestas_collection = db.apuestas
-
-def obtener_partidos():
-    """Obtiene todos los partidos de MongoDB"""
-    return list(partidos_collection.find())
-
-def obtener_apuestas_por_partido(partido_id):
-    """Obtiene todas las apuestas de un partido"""
-    try:
-        return list(apuestas_collection.find({"partido_id": ObjectId(partido_id)}))
-    except:
-        return []
-
-def obtener_apuesta(partido_id, apuesta_id):
-    """Obtiene una apuesta específica"""
-    try:
-        return apuestas_collection.find_one({
-            "_id": ObjectId(apuesta_id),
-            "partido_id": ObjectId(partido_id)
-        })
-    except:
-        return None
+# Datos en memoria (se pierden si Vercel reinicia, pero funciona sin errores de write)
+partidos = []
+apuestas_por_partido = {}
 
 @app.route("/")
 def index():
-    partidos = obtener_partidos()
-    
-    # Crear estructura apuestas_por_partido para compatibilidad con template
-    apuestas_por_partido = {}
-    for i, partido in enumerate(partidos):
-        apuestas_por_partido[i] = obtener_apuestas_por_partido(str(partido["_id"]))
-    
-    total_apostadores = sum(len(apuestas) for apuestas in apuestas_por_partido.values())
-    total_dinero = sum(
-        sum(a.get("dinero", 0) for a in apuestas)
-        for apuestas in apuestas_por_partido.values()
-    )
-    
-    return render_template(
-        "index.html",
-        partidos=partidos,
-        apuestas_por_partido=apuestas_por_partido,
-        total_apostadores=total_apostadores,
-        total_dinero=total_dinero
-    )
+    total_apostadores = sum(len(apuestas_por_partido.get(i, [])) for i in range(len(partidos)))
+    total_dinero = sum(sum(a.get("dinero", 0) for a in apuestas_por_partido.get(i, [])) for i in range(len(partidos)))
+    return render_template("index.html", partidos=partidos, apuestas_por_partido=apuestas_por_partido,
+                           total_apostadores=total_apostadores, total_dinero=total_dinero)
 
 @app.route("/ingresar", methods=["GET", "POST"])
 def ingresar():
@@ -70,29 +28,17 @@ def ingresar():
             flash("Todos los campos del partido son requeridos.", "error")
             return redirect(url_for("ingresar"))
 
-        partido = {
-            "equipo1": equipo1,
-            "equipo2": equipo2,
-            "fecha": fecha,
-            "hora": hora,
-            "lugar": lugar
-        }
-        partidos_collection.insert_one(partido)
+        partidos.append({"equipo1": equipo1, "equipo2": equipo2, "fecha": fecha, "hora": hora, "lugar": lugar})
+        apuestas_por_partido[len(partidos)-1] = []
         flash(f"Partido {equipo1} vs {equipo2} registrado con exito.", "success")
         return redirect(url_for("index"))
-    
     return render_template("ingresar.html")
 
 @app.route("/apostar/<int:partido_id>", methods=["GET", "POST"])
 def apostar(partido_id):
-    partidos = obtener_partidos()
-    
     if partido_id < 0 or partido_id >= len(partidos):
         flash("El partido seleccionado no existe.", "error")
         return redirect(url_for("index"))
-
-    partido = partidos[partido_id]
-    partido_obj_id = str(partido["_id"])
 
     if request.method == "POST":
         nombre = request.form["nombre"].strip()
@@ -106,68 +52,52 @@ def apostar(partido_id):
             flash("Por favor completa todos los campos. El dinero debe ser mayor a 0.", "error")
             return redirect(url_for("apostar", partido_id=partido_id))
 
-        apuesta = {
-            "partido_id": ObjectId(partido_obj_id),
-            "nombre": nombre,
-            "dinero": dinero,
-            "marcador": marcador
-        }
-        apuestas_collection.insert_one(apuesta)
+        apuesta = {"nombre": nombre, "dinero": dinero, "marcador": marcador}
+        if partido_id not in apuestas_por_partido:
+            apuestas_por_partido[partido_id] = []
+        apuestas_por_partido[partido_id].append(apuesta)
         flash(f"Apuesta de {nombre} registrada exitosamente!", "success")
         return redirect(url_for("index"))
-    
-    return render_template("apostar.html", partido=partido, partido_id=partido_id)
+    return render_template("apostar.html", partido=partidos[partido_id], partido_id=partido_id)
 
 @app.route("/borrar_partido/<int:partido_id>", methods=["POST"])
 def borrar_partido(partido_id):
+    global partidos, apuestas_por_partido
     try:
-        partidos = obtener_partidos()
-        
-        if partido_id < 0 or partido_id >= len(partidos):
+        if 0 <= partido_id < len(partidos):
+            equipo1 = partidos[partido_id]["equipo1"]
+            equipo2 = partidos[partido_id]["equipo2"]
+            
+            partidos.pop(partido_id)
+            
+            # Reorganizar índices de apuestas
+            if partido_id in apuestas_por_partido:
+                del apuestas_por_partido[partido_id]
+            
+            apuestas_renumeradas = {}
+            for old_id, apuestas in sorted(apuestas_por_partido.items()):
+                if old_id < partido_id:
+                    apuestas_renumeradas[old_id] = apuestas
+                elif old_id > partido_id:
+                    apuestas_renumeradas[old_id - 1] = apuestas
+            
+            apuestas_por_partido = apuestas_renumeradas
+            
+            flash(f"Partido {equipo1} vs {equipo2} eliminado.", "success")
+        else:
             flash("El partido no existe.", "error")
-            return redirect(url_for("index"))
-        
-        partido = partidos[partido_id]
-        equipo1 = partido["equipo1"]
-        equipo2 = partido["equipo2"]
-        partido_obj_id = ObjectId(partido["_id"])
-        
-        # Eliminar el partido
-        partidos_collection.delete_one({"_id": partido_obj_id})
-        
-        # Eliminar todas las apuestas del partido
-        apuestas_collection.delete_many({"partido_id": partido_obj_id})
-        
-        flash(f"Partido {equipo1} vs {equipo2} eliminado.", "success")
     except Exception as e:
         flash(f"Error al eliminar: {str(e)}", "error")
         app.logger.error(f"Error en borrar_partido: {str(e)}")
-    
     return redirect(url_for("index"))
 
-@app.route("/editar_apuesta/<int:partido_id>/<apuesta_id>", methods=["GET", "POST"])
+@app.route("/editar_apuesta/<int:partido_id>/<int:apuesta_id>", methods=["GET", "POST"])
 def editar_apuesta(partido_id, apuesta_id):
-    partidos = obtener_partidos()
-    
-    if partido_id < 0 or partido_id >= len(partidos):
-        flash("El partido no existe.", "error")
-        return redirect(url_for("index"))
-    
-    partido = partidos[partido_id]
-    partido_obj_id = ObjectId(partido["_id"])
-    
-    try:
-        apuesta_obj_id = ObjectId(apuesta_id)
-        apuesta = apuestas_collection.find_one({
-            "_id": apuesta_obj_id,
-            "partido_id": partido_obj_id
-        })
-    except:
-        apuesta = None
-    
-    if not apuesta:
+    if partido_id not in apuestas_por_partido or apuesta_id < 0 or apuesta_id >= len(apuestas_por_partido[partido_id]):
         flash("La apuesta no existe.", "error")
         return redirect(url_for("index"))
+
+    apuesta = apuestas_por_partido[partido_id][apuesta_id]
 
     if request.method == "POST":
         nombre = request.form["nombre"].strip()
@@ -181,56 +111,29 @@ def editar_apuesta(partido_id, apuesta_id):
             flash("Por favor ingresa datos validos.", "error")
             return redirect(url_for("editar_apuesta", partido_id=partido_id, apuesta_id=apuesta_id))
 
-        apuestas_collection.update_one(
-            {"_id": apuesta_obj_id},
-            {
-                "$set": {
-                    "nombre": nombre,
-                    "dinero": dinero,
-                    "marcador": marcador
-                }
-            }
-        )
+        apuesta["nombre"] = nombre
+        apuesta["dinero"] = dinero
+        apuesta["marcador"] = marcador
         flash("Apuesta modificada exitosamente.", "success")
         return redirect(url_for("index"))
 
-    return render_template(
-        "editar_apuesta.html",
-        partido=partido,
-        apuesta=apuesta,
-        partido_id=partido_id,
-        apuesta_id=apuesta_id
-    )
+    return render_template("editar_apuesta.html", partido=partidos[partido_id], apuesta=apuesta,
+                           partido_id=partido_id, apuesta_id=apuesta_id)
 
-@app.route("/borrar_apuesta/<int:partido_id>/<apuesta_id>", methods=["POST"])
+@app.route("/borrar_apuesta/<int:partido_id>/<int:apuesta_id>", methods=["POST"])
 def borrar_apuesta(partido_id, apuesta_id):
     try:
-        partidos = obtener_partidos()
-        
-        if partido_id < 0 or partido_id >= len(partidos):
-            flash("El partido no existe.", "error")
-            return redirect(url_for("index"))
-        
-        partido = partidos[partido_id]
-        partido_obj_id = ObjectId(partido["_id"])
-        apuesta_obj_id = ObjectId(apuesta_id)
-        
-        apuesta = apuestas_collection.find_one({
-            "_id": apuesta_obj_id,
-            "partido_id": partido_obj_id
-        })
-        
-        if not apuesta:
+        if partido_id not in apuestas_por_partido or apuesta_id < 0 or apuesta_id >= len(apuestas_por_partido[partido_id]):
             flash("La apuesta no existe.", "error")
             return redirect(url_for("index"))
-        
-        apuestas_collection.delete_one({"_id": apuesta_obj_id})
+
+        apuestas_por_partido[partido_id].pop(apuesta_id)
         flash("Apuesta eliminada.", "success")
     except Exception as e:
         flash(f"Error al eliminar apuesta: {str(e)}", "error")
         app.logger.error(f"Error en borrar_apuesta: {str(e)}")
-    
     return redirect(url_for("index"))
 
 if __name__ == "__main__":
     app.run(debug=True)
+
