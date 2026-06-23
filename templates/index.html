@@ -470,6 +470,17 @@
                 <div class="bet-better-info">
                     <span class="better-name">
                         <i class="fa-regular fa-circle-user" style="color: var(--accent-green);"></i> {{ a.nombre }}
+                        {% if p.finalizado and a.get('resultado') %}
+                            {% if a['resultado'] == 'ganador' %}
+                                <span style="color: #10b981; font-weight: 700; margin-left: 0.35rem;">
+                                    <i class="fa-solid fa-trophy"></i> ¡GANÓ!
+                                </span>
+                            {% else %}
+                                <span style="color: #ef4444; font-weight: 700; margin-left: 0.35rem;">
+                                    <i class="fa-solid fa-circle-xmark"></i> PERDIÓ
+                                </span>
+                            {% endif %}
+                        {% endif %}
                     </span>
                     <div class="bet-details-row">
                         <span class="bet-money-badge" title="Monto">${{ a.dinero }}</span>
@@ -495,10 +506,69 @@
             {% endif %}
         </div>
 
+        <!-- Match Result Section -->
+        {% if p.finalizado %}
+            <!-- Show final score and results -->
+            <div style="background-color: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 1rem; margin-bottom: 1rem; text-align: center;">
+                <div style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.5rem; font-weight: 600;">Resultado Final</div>
+                <div style="font-size: 1.4rem; font-weight: 800; color: var(--accent-green); margin-bottom: 0.5rem;">{{ p.marcador_final }}</div>
+                {% set winners = apuestas_por_partido[partido_id]|selectattr('resultado', 'equalto', 'ganador')|list %}
+                <div style="font-size: 0.85rem; color: var(--text-primary);">
+                    {% if winners|length > 0 %}
+                        <i class="fa-solid fa-crown" style="color: var(--accent-gold);"></i> 
+                        <strong>{{ winners|length }}</strong> acertó/acertaron el marcador
+                    {% else %}
+                        <i class="fa-solid fa-circle-xmark" style="color: var(--accent-danger);"></i> 
+                        <strong>Nadie acertó</strong> el marcador final
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <!-- Form to enter final score -->
+            <form method="POST" action="/marcar_resultado/{{ partido_id }}" style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                <input 
+                    type="text" 
+                    name="marcador_final" 
+                    placeholder="Ej: 2-1" 
+                    required
+                    style="
+                        flex: 1;
+                        padding: 0.5rem 0.75rem;
+                        background-color: var(--bg-tertiary);
+                        border: 1px solid var(--border-color);
+                        border-radius: 8px;
+                        color: var(--text-primary);
+                        font-size: 0.9rem;
+                        font-weight: 600;
+                    "
+                >
+                <button 
+                    type="submit" 
+                    style="
+                        padding: 0.5rem 1rem;
+                        background-color: var(--accent-green);
+                        color: white;
+                        border: none;
+                        border-radius: 8px;
+                        font-weight: 700;
+                        cursor: pointer;
+                        transition: var(--transition);
+                        white-space: nowrap;
+                    "
+                    onmouseover="this.style.opacity='0.85'"
+                    onmouseout="this.style.opacity='1'"
+                >
+                    <i class="fa-solid fa-flag-checkered"></i> Marcar Resultado
+                </button>
+            </form>
+        {% endif %}
+
         <!-- Bet CTA Button -->
+        {% if not p.finalizado %}
         <a href="/apostar/{{ partido_id }}" class="btn btn-primary btn-bet-action">
             <i class="fa-solid fa-dice"></i> Apostar en este Partido
         </a>
+        {% endif %}
     </div>
     {% endfor %}
 </div>

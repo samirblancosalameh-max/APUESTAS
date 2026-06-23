@@ -18,6 +18,13 @@ def cargar_datos():
                 datos = json.load(f)
                 partidos = datos.get("partidos", [])
                 apuestas_por_partido = {int(k): v for k, v in datos.get("apuestas_por_partido", {}).items()}
+                
+                # Asegurar que todos los partidos tengan los campos necesarios
+                for p in partidos:
+                    if "marcador_final" not in p:
+                        p["marcador_final"] = None
+                    if "finalizado" not in p:
+                        p["finalizado"] = False
     except:
         partidos = []
         apuestas_por_partido = {}
@@ -54,7 +61,15 @@ def ingresar():
             flash("Todos los campos del partido son requeridos.", "error")
             return redirect(url_for("ingresar"))
 
-        partidos.append({"equipo1": equipo1, "equipo2": equipo2, "fecha": fecha, "hora": hora, "lugar": lugar})
+        partidos.append({
+            "equipo1": equipo1, 
+            "equipo2": equipo2, 
+            "fecha": fecha, 
+            "hora": hora, 
+            "lugar": lugar,
+            "marcador_final": None,
+            "finalizado": False
+        })
         apuestas_por_partido[len(partidos)-1] = []
         guardar_datos()
         flash(f"Partido {equipo1} vs {equipo2} registrado con exito.", "success")
@@ -156,6 +171,50 @@ def borrar_apuesta(partido_id, apuesta_id):
     apuestas_por_partido[partido_id].pop(apuesta_id)
     guardar_datos()
     flash("Apuesta eliminada.", "success")
+    return redirect(url_for("index"))
+
+def compare_scores(expected, actual):
+    """
+    Compara dos marcadores en formato 'X-Y'
+    Retorna True si son iguales, False si no
+    """
+    try:
+        expected = expected.strip().lower()
+        actual = actual.strip().lower()
+        return expected == actual
+    except:
+        return False
+
+@app.route("/marcar_resultado/<int:partido_id>", methods=["POST"])
+def marcar_resultado(partido_id):
+    """
+    Marca el resultado final de un partido y evalúa quién ganó
+    """
+    if partido_id < 0 or partido_id >= len(partidos):
+        flash("El partido no existe.", "error")
+        return redirect(url_for("index"))
+    
+    marcador_final = request.form.get("marcador_final", "").strip()
+    
+    if not marcador_final:
+        flash("Por favor ingresa un marcador final (formato: X-Y).", "error")
+        return redirect(url_for("index"))
+    
+    # Marcar partido como finalizado
+    partidos[partido_id]["marcador_final"] = marcador_final
+    partidos[partido_id]["finalizado"] = True
+    
+    # Evaluar apuestas
+    if partido_id in apuestas_por_partido:
+        for apuesta in apuestas_por_partido[partido_id]:
+            # Comparar marcador de la apuesta con el marcador final
+            if compare_scores(apuesta["marcador"], marcador_final):
+                apuesta["resultado"] = "ganador"
+            else:
+                apuesta["resultado"] = "perdedor"
+    
+    guardar_datos()
+    flash(f"Resultado marcado: {partidos[partido_id]['equipo1']} vs {partidos[partido_id]['equipo2']} = {marcador_final}", "success")
     return redirect(url_for("index"))
 
 if __name__ == "__main__":
