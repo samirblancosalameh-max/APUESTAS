@@ -81,7 +81,9 @@ def borrar_partido(partido_id):
                 elif old_id > partido_id:
                     apuestas_renumeradas[old_id - 1] = apuestas
             
-            apuestas_por_partido = apuestas_renumeradas
+            # Actualizar el diccionario global correctamente
+            apuestas_por_partido.clear()
+            apuestas_por_partido.update(apuestas_renumeradas)
             
             flash(f"Partido {equipo1} vs {equipo2} eliminado.", "success")
         else:
