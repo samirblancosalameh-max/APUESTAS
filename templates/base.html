@@ -632,44 +632,16 @@
     <!-- Confirm delete helper forms (hidden) -->
     <div id="confirmForms" style="display:none;"></div>
 
-    <script src="{{ url_for('static', filename='app.js') }}"></script>
     <script>
-        // Updated confirmarAccion for localStorage
-        function confirmarAccion(action, mensaje) {
+        // Simple confirmation before deleting a match or bet
+        // Submits a hidden form to the given action URL
+        function confirmarAccion(actionUrl, mensaje) {
             if (!confirm(mensaje)) return;
-            
-            // Parse action URL to determine what to do
-            if (action.includes('/borrar_partido/')) {
-                const match = action.match(/\/borrar_partido\/(\d+)/);
-                if (match) {
-                    const partido_id = parseInt(match[1]);
-                    ApuestasApp.eliminarPartido(partido_id);
-                    showFlash('Partido eliminado.', 'success');
-                    setTimeout(() => window.location.href = '/', 500);
-                }
-            } else if (action.includes('/borrar_apuesta/')) {
-                const match = action.match(/\/borrar_apuesta\/(\d+)\/(\d+)/);
-                if (match) {
-                    const partido_id = parseInt(match[1]);
-                    const apuesta_id = parseInt(match[2]);
-                    ApuestasApp.eliminarApuesta(partido_id, apuesta_id);
-                    showFlash('Apuesta eliminada.', 'success');
-                    setTimeout(() => window.location.href = '/', 500);
-                }
-            }
-        }
-
-        function showFlash(mensaje, tipo) {
-            const alertsContainer = document.querySelector('.alerts-container') || 
-                                    document.querySelector('main') || 
-                                    document.body;
-            const alert = document.createElement('div');
-            alert.className = 'flash-alert alert-' + tipo;
-            alert.textContent = mensaje;
-            alert.style.cssText = 'position: fixed; top: 20px; right: 20px; padding: 15px 20px; background: ' + 
-                                  (tipo === 'success' ? '#10b981' : '#ef4444') + '; color: white; border-radius: 8px; z-index: 9999;';
-            document.body.appendChild(alert);
-            setTimeout(() => alert.remove(), 3000);
+            const f = document.createElement('form');
+            f.method = 'POST';
+            f.action = actionUrl;
+            document.getElementById('confirmForms').appendChild(f);
+            f.submit();
         }
 
         // Automatically hide flash alerts after 5 seconds
