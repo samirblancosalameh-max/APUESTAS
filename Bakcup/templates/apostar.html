@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head><title>Apostar</title></head>
+<body>
+    <h1>Apostar en {{partido.equipo1}} vs {{partido.equipo2}}</h1>
+    <form method="POST">
+        Nombre: <input name="nombre"><br>
+        Marcador {{partido.equipo1}}: <input name="marcador1"><br>
+        Marcador {{partido.equipo2}}: <input name="marcador2"><br>
+        Dinero a apostar: <input type="number" name="dinero"><br>
+        <button type="submit">Registrar Apuesta</button>
+    </form>
+</body>
+</html>
+

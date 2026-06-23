@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Apuestas Mundial 2026 SEM</title>
+    <style>
+        body { font-family: Arial; background: #f0f8ff; display: flex; }
+        .menu { width: 250px; background: #006400; color: white; padding: 20px; }
+        .menu a { 
+            color: white; 
+            display: block; 
+            margin: 10px 0; 
+            text-decoration: none; 
+            padding: 5px;
+            border-radius: 5px;
+            transition: background 0.3s, color 0.3s;
+        }
+        .menu a:hover {
+            background: #ffcc00;
+            color: #006400;
+            font-weight: bold;
+        }
+
+        .menu h2 {
+            color: #ffcc00;
+            font-size: 22px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .contenido { flex: 1; padding: 20px; text-align: center; }
+        .partido { 
+            border: 2px solid #006400; 
+            margin: 10px auto; 
+            padding: 10px; 
+            border-radius: 10px; 
+            background: #e6ffe6; 
+            width: 80%; 
+            text-align: left; /* ✅ datos alineados a la izquierda */
+        }
+        .apuesta { 
+            border: 1px dashed #006400; 
+            margin: 5px 0; 
+            padding: 5px; 
+            border-radius: 5px; 
+            background: #f9fff9; 
+        }
+        .resumen { 
+            background: #004d00; 
+            color: white; 
+            padding: 10px; 
+            margin-top: 20px; 
+            border-radius: 10px; 
+            text-align: center; 
+        }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ffffff; padding: 8px; text-align: center; }
+        th { background: #008000; }
+
+        h1 { font-size: 28px; color: white; background: linear-gradient(to right, #006400, #00cc66); padding: 10px; border-radius: 10px; display: inline-block; }
+        h2 { font-size: 20px; color: #004d00; margin-bottom: 8px; }
+
+        /* Botón borrar en rojo */
+        .btn-borrar {
+            background: #cc0000;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn-borrar:hover {
+            background: #990000;
+        }
+    </style>
+</head>
+<body>
+    <div class="menu">
+        <h2>☰ Menú</h2>
+        <a href="/ingresar">Ingresar Partidos</a>
+
+        <!-- Resumen general en el menú -->
+        <div class="resumen">
+            <h3>⚽ Resumen General ⚽</h3>
+            <table>
+                <tr>
+                    <th>Apostadores</th>
+                    <th>Dinero</th>
+                </tr>
+                <tr>
+                    <td>{{ total_apostadores }}</td>
+                    <td>${{ total_dinero }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="contenido">
+        <h1>🏆 Apuestas Mundial 2026 SEM ⚽</h1>
+        <h2>Partidos</h2>
+
+        {% for p in partidos %}
+            <div class="partido">
+                <b>⚽ {{p.equipo1}} vs {{p.equipo2}} ⚽</b><br>
+                📅 {{p.fecha}} - 🕒 {{p.hora}} - 📍 {{p.lugar}}<br><br>
+                <a href="/apostar/{{loop.index0}}">⚽ Apostar</a>
+                <form action="/borrar_partido/{{loop.index0}}" method="POST" style="display:inline;" onsubmit="return pedirClave(this);">
+                    <button type="submit" class="btn-borrar">❌ Borrar</button>
+                </form>
+
+                <h3>Apuestas registradas:</h3>
+                {% for a in apuestas_por_partido[loop.index0] %}
+                    <div class="apuesta">
+                        {{a.nombre}} apostó ${{a.dinero}} → {{p.equipo1}} {{a.marcador}} {{p.equipo2}}
+                    </div>
+                {% endfor %}
+
+                <!-- Resumen automático por partido -->
+                <table>
+                    <tr>
+                        <th>Apostadores</th>
+                        <th>Dinero</th>
+                    </tr>
+                    <tr>
+                        <td>{{ apuestas_por_partido[loop.index0] | length }}</td>
+                        <td>${{ apuestas_por_partido[loop.index0] | sum(attribute='dinero') }}</td>
+                    </tr>
+                </table>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Script al final -->
+    <script>
+        function pedirClave(form) {
+            var clave = prompt("Ingresa la clave para borrar:");
+            if (clave === null || clave.trim() === "") {
+                return false;
+            }
+            var input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "clave";
+            input.value = clave;
+            form.appendChild(input);
+            return true;
+        }
+    </script>
+</body>
+</html>

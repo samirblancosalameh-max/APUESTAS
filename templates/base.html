@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Apuestas Mundial 2026 SEM{% endblock %}</title>
+    <!-- Font Awesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-primary: #0b0f19;
+            --bg-secondary: #121824;
+            --bg-tertiary: #1e293b;
+            --accent-green: #10b981;
+            --accent-green-hover: #059669;
+            --accent-gold: #f59e0b;
+            --accent-gold-hover: #d97706;
+            --accent-danger: #ef4444;
+            --accent-danger-hover: #dc2626;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --border-color: #334155;
+            --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            /* Modern system font stack – works offline, looks great */
+            --font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            line-height: 1.5;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        /* Layout Structure */
+        .app-container {
+            display: flex;
+            flex-direction: row;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        @media (max-width: 1024px) {
+            .app-container {
+                flex-direction: column;
+            }
+        }
+
+        /* Header / Navbar */
+        .app-header {
+            display: none;
+            background-color: var(--bg-secondary);
+            padding: 1rem 1.5rem;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 40;
+        }
+
+        @media (max-width: 1024px) {
+            .app-header {
+                display: flex;
+            }
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 320px;
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: static;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                padding: 1.5rem;
+            }
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+            color: var(--accent-gold);
+            text-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .logo-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 30%, var(--accent-gold) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.5px;
+        }
+
+        /* Navigation menu */
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.85rem 1.25rem;
+            border-radius: 12px;
+            background-color: rgba(255, 255, 255, 0.03);
+            font-weight: 500;
+            border: 1px solid transparent;
+            transition: var(--transition);
+        }
+
+        .nav-item:hover {
+            background-color: rgba(16, 185, 129, 0.08);
+            border-color: rgba(16, 185, 129, 0.2);
+            color: var(--accent-green);
+            transform: translateX(4px);
+        }
+
+        .nav-item.active {
+            background-color: var(--accent-green);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .nav-item i {
+            font-size: 1.15rem;
+        }
+
+        /* Stats Card inside Sidebar */
+        .sidebar-stats {
+            background-color: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.25rem;
+            margin-top: auto;
+        }
+
+        .stats-header {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-cols: 1fr;
+            gap: 1rem;
+        }
+
+        .stat-box {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background-color: var(--bg-primary);
+            padding: 0.85rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .stat-box-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .stat-box-icon.green {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--accent-green);
+        }
+
+        .stat-box-icon.gold {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: var(--accent-gold);
+        }
+
+        .stat-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .stat-value {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2.5rem;
+            overflow-y: auto;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1.5rem;
+            }
+        }
+
+        /* Flash Messages styling */
+        .flash-container {
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .flash-alert {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+            font-weight: 500;
+            animation: slideIn 0.3s ease-out;
+            position: relative;
+            border: 1px solid transparent;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .flash-alert.success {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #d1fae5;
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+
+        .flash-alert.error {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #fee2e2;
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .flash-close {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            font-size: 1.2rem;
+            opacity: 0.7;
+            transition: var(--transition);
+        }
+
+        .flash-close:hover {
+            opacity: 1;
+        }
+
+        /* Forms, Buttons and Cards */
+        .card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-family: var(--font-family);
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-green);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-green-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-color: var(--text-secondary);
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background-color: var(--accent-danger);
+            color: #fff;
+        }
+
+        .btn-danger:hover {
+            background-color: var(--accent-danger-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-gold {
+            background-color: var(--accent-gold);
+            color: #000;
+        }
+
+        .btn-gold:hover {
+            background-color: var(--accent-gold-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+        }
+
+        /* Modal Backdrop and Card */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            transition: var(--transition);
+        }
+
+        .modal-backdrop.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .modal-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: var(--card-shadow);
+            transform: scale(0.95);
+            transition: var(--transition);
+            overflow: hidden;
+        }
+
+        .modal-backdrop:not(.hidden) .modal-card {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-header h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            line-height: 1;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-body p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            background-color: rgba(0, 0, 0, 0.15);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+
+        /* Beautiful Input Fields */
+        .input-group {
+            position: relative;
+            margin-bottom: 1.25rem;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            text-align: left;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+        }
+
+        .input-control {
+            width: 100%;
+            padding: 0.85rem 1rem 0.85rem 2.75rem;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-family: var(--font-family);
+            font-size: 0.95rem;
+            transition: var(--transition);
+        }
+
+        .input-control:focus {
+            outline: none;
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+        }
+
+        .input-control::placeholder {
+            color: #4b5563;
+        }
+
+        .eye-toggle {
+            position: absolute;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.05rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .eye-toggle:hover {
+            color: var(--text-primary);
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <header class="app-header">
+        <div class="logo-container" style="margin-bottom: 0;">
+            <i class="fa-solid fa-trophy logo-icon"></i>
+            <h1 class="logo-title">Mundial 2026 SEM</h1>
+        </div>
+        <a href="/ingresar" class="btn btn-primary btn-sm" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
+            <i class="fa-solid fa-plus"></i> Partido
+        </a>
+    </header>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation & Statistics -->
+        <aside class="sidebar">
+            <div class="logo-container">
+                <i class="fa-solid fa-trophy logo-icon"></i>
+                <h1 class="logo-title">Apuestas Mundial 2026 SEM</h1>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="/" class="nav-item {% if request.path == '/' %}active{% endif %}">
+                    <i class="fa-solid fa-house"></i> Panel Principal
+                </a>
+                <a href="/ingresar" class="nav-item {% if request.path == '/ingresar' %}active{% endif %}">
+                    <i class="fa-solid fa-plus-circle"></i> Registrar Partido
+                </a>
+            </nav>
+
+            <div class="sidebar-stats">
+                <h3 class="stats-header">
+                    <i class="fa-solid fa-chart-simple"></i> Resumen General
+                </h3>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-box-icon green">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Apostadores</span>
+                            <span class="stat-value" id="global-total-bettors">{{ total_apostadores|default(0) }}</span>
+                        </div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-icon gold">
+                            <i class="fa-solid fa-wallet"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Dinero Acumulado</span>
+                            <span class="stat-value" id="global-total-money">${{ total_dinero|default(0) }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-container">
+                        {% for category, message in messages %}
+                            <div class="flash-alert {{ category }}">
+                                <i class="fa-solid {% if category == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
+                                <span>{{ message }}</span>
+                                <button class="flash-close" onclick="this.parentElement.remove();">&times;</button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Confirm delete helper forms (hidden) -->
+    <div id="confirmForms" style="display:none;"></div>
+
+    <script>
+        // Simple confirmation before deleting a match or bet
+        // Submits a hidden form to the given action URL
+        function confirmarAccion(actionUrl, mensaje) {
+            if (!confirm(mensaje)) return;
+            const f = document.createElement('form');
+            f.method = 'POST';
+            f.action = actionUrl;
+            document.getElementById('confirmForms').appendChild(f);
+            f.submit();
+        }
+
+        // Automatically hide flash alerts after 5 seconds
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.flash-alert');
+            alerts.forEach(alert => {
+                alert.style.opacity = '0';
+                alert.style.transform = 'translateY(-10px)';
+                alert.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                setTimeout(() => alert.remove(), 500);
+            });
+        }, 5000);
+    </script>
+</body>
+</html>

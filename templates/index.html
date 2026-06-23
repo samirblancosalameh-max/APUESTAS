@@ -1,0 +1,518 @@
+{% extends 'base.html' %}
+
+{% block title %}Panel Principal - Apuestas Mundial 2026 SEM{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-title-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .page-title span {
+        background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-gold) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .match-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        gap: 1.5rem;
+    }
+
+    @media (max-width: 480px) {
+        .match-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .match-card {
+        background-color: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+        transition: var(--transition);
+        box-shadow: var(--card-shadow);
+    }
+
+    .match-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(to right, var(--accent-green), var(--accent-gold));
+        opacity: 0.8;
+    }
+
+    .match-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(245, 158, 11, 0.3);
+        box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.6), 0 10px 15px -10px rgba(245, 158, 11, 0.1);
+    }
+
+    .match-meta-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.25rem;
+    }
+
+    .match-location {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-delete-match {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background-color: rgba(239, 68, 68, 0.08);
+        border: 1px solid rgba(239, 68, 68, 0.15);
+        color: var(--accent-danger);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .btn-delete-match:hover {
+        background-color: var(--accent-danger);
+        color: white;
+        transform: scale(1.05);
+    }
+
+    .match-teams-display {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.25rem;
+        text-align: center;
+    }
+
+    .team-display-box {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .team-flag-placeholder {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background-color: var(--bg-tertiary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        border: 1.5px solid var(--border-color);
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .team-name-lbl {
+        font-weight: 700;
+        font-size: 0.95rem;
+        letter-spacing: 0.25px;
+        color: var(--text-primary);
+        text-transform: uppercase;
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .vs-divider {
+        font-size: 0.8rem;
+        font-weight: 800;
+        color: var(--accent-gold);
+        background-color: rgba(245, 158, 11, 0.08);
+        border: 1px solid rgba(245, 158, 11, 0.2);
+        padding: 0.25rem 0.6rem;
+        border-radius: 30px;
+        margin: 0 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .match-time-info {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        background-color: rgba(255, 255, 255, 0.02);
+        border-radius: 10px;
+        padding: 0.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        margin-bottom: 1.5rem;
+    }
+
+    .match-time-info span {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    .match-stats-panel {
+        display: grid;
+        grid-template-cols: 1fr 1fr;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .match-stat-pill {
+        background-color: var(--bg-tertiary);
+        border: 1px solid var(--border-color);
+        padding: 0.6rem 0.8rem;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+    }
+
+    .match-stat-pill-label {
+        font-size: 0.7rem;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+
+    .match-stat-pill-value {
+        font-size: 0.95rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    .match-stat-pill-value.gold {
+        color: var(--accent-gold);
+    }
+
+    .match-stat-pill-value.green {
+        color: var(--accent-green);
+    }
+
+    .bets-list-container {
+        border-top: 1px dashed var(--border-color);
+        padding-top: 1.25rem;
+        margin-bottom: 1.5rem;
+        max-height: 180px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+    }
+
+    .bets-title {
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    .no-bets-text {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        font-style: italic;
+        padding: 0.5rem 0;
+        text-align: center;
+    }
+
+    .bet-item-row {
+        background-color: var(--bg-tertiary);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 0.6rem 0.8rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: var(--transition);
+    }
+
+    .bet-item-row:hover {
+        background-color: rgba(255, 255, 255, 0.04);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .bet-better-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+    }
+
+    .better-name {
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    .bet-details-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.15rem;
+    }
+
+    .bet-money-badge {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--accent-gold);
+        background-color: rgba(245, 158, 11, 0.1);
+        padding: 0.05rem 0.4rem;
+        border-radius: 4px;
+        border: 0.5px solid rgba(245, 158, 11, 0.2);
+    }
+
+    .bet-score-badge {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--accent-green);
+        background-color: rgba(16, 185, 129, 0.1);
+        padding: 0.05rem 0.4rem;
+        border-radius: 4px;
+        border: 0.5px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .bet-action-buttons {
+        display: flex;
+        gap: 0.35rem;
+    }
+
+    .bet-action-btn {
+        width: 26px;
+        height: 26px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        border: none;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .bet-action-btn.edit {
+        background-color: rgba(245, 158, 11, 0.08);
+        border: 1px solid rgba(245, 158, 11, 0.15);
+        color: var(--accent-gold);
+    }
+
+    .bet-action-btn.edit:hover {
+        background-color: var(--accent-gold);
+        color: black;
+        transform: scale(1.08);
+    }
+
+    .bet-action-btn.delete {
+        background-color: rgba(239, 68, 68, 0.08);
+        border: 1px solid rgba(239, 68, 68, 0.15);
+        color: var(--accent-danger);
+    }
+
+    .bet-action-btn.delete:hover {
+        background-color: var(--accent-danger);
+        color: white;
+        transform: scale(1.08);
+    }
+
+    .btn-bet-action {
+        width: 100%;
+        margin-top: auto;
+    }
+
+    .empty-dashboard {
+        text-align: center;
+        padding: 4rem 2rem;
+        background-color: var(--bg-secondary);
+        border: 1px dashed var(--border-color);
+        border-radius: 20px;
+        max-width: 500px;
+        margin: 4rem auto;
+    }
+
+    .empty-icon {
+        font-size: 3.5rem;
+        color: var(--text-secondary);
+        margin-bottom: 1.5rem;
+        opacity: 0.5;
+    }
+
+    .empty-dashboard h3 {
+        font-size: 1.25rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .empty-dashboard p {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-title-section">
+    <div class="page-title">
+        <i class="fa-solid fa-trophy text-gold" style="color: var(--accent-gold);"></i>
+        <span>Partidos del Mundial</span>
+    </div>
+    <a href="/ingresar" class="btn btn-primary">
+        <i class="fa-solid fa-plus-circle"></i> Nuevo Partido
+    </a>
+</div>
+
+{% if partidos %}
+<div class="match-grid">
+    {% for p in partidos %}
+    {% set partido_id = loop.index0 %}
+    <div class="match-card">
+        <!-- Top meta bar -->
+        <div class="match-meta-top">
+            <span class="match-location">
+                <i class="fa-solid fa-map-pin"></i> {{ p.lugar }}
+            </span>
+            <!-- Botón eliminar partido -->
+            <button class="btn-delete-match" title="Eliminar Partido"
+                onclick="confirmarAccion('/borrar_partido/{{ partido_id }}', 'Borrar partido {{ p.equipo1 }} vs {{ p.equipo2 }}?')">
+                <i class="fa-solid fa-trash-can"></i>
+            </button>
+        </div>
+
+        <!-- Teams flags & names -->
+        <div class="match-teams-display">
+            <div class="team-display-box">
+                <div class="team-flag-placeholder">
+                    ⚽
+                </div>
+                <span class="team-name-lbl" title="{{ p.equipo1 }}">{{ p.equipo1 }}</span>
+            </div>
+            <span class="vs-divider">VS</span>
+            <div class="team-display-box">
+                <div class="team-flag-placeholder">
+                    ⚽
+                </div>
+                <span class="team-name-lbl" title="{{ p.equipo2 }}">{{ p.equipo2 }}</span>
+            </div>
+        </div>
+
+        <!-- Time and Date -->
+        <div class="match-time-info">
+            <span>
+                <i class="fa-regular fa-calendar-days"></i> {{ p.fecha }}
+            </span>
+            <span>
+                <i class="fa-regular fa-clock"></i> {{ p.hora }}
+            </span>
+        </div>
+
+        <!-- Match Stats Pills -->
+        <div class="match-stats-panel">
+            <div class="match-stat-pill">
+                <span class="match-stat-pill-label">Apuestas</span>
+                <span class="match-stat-pill-value green">
+                    <i class="fa-solid fa-users"></i> {{ apuestas_por_partido[partido_id]|length }}
+                </span>
+            </div>
+            <div class="match-stat-pill">
+                <span class="match-stat-pill-label">Total Acumulado</span>
+                <span class="match-stat-pill-value gold">
+                    <i class="fa-solid fa-sack-dollar"></i> ${{ apuestas_por_partido[partido_id]|sum(attribute='dinero')
+                    }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Bets Section -->
+        <div class="bets-title">
+            <i class="fa-solid fa-receipt"></i> Apuestas registradas:
+        </div>
+        <div class="bets-list-container">
+            {% if apuestas_por_partido[partido_id] %}
+            {% for a in apuestas_por_partido[partido_id] %}
+            {% set apuesta_id = loop.index0 %}
+            <div class="bet-item-row">
+                <div class="bet-better-info">
+                    <span class="better-name">
+                        <i class="fa-regular fa-circle-user" style="color: var(--accent-green);"></i> {{ a.nombre }}
+                    </span>
+                    <div class="bet-details-row">
+                        <span class="bet-money-badge" title="Monto">${{ a.dinero }}</span>
+                        <span class="bet-score-badge" title="Marcador">{{ a.marcador }}</span>
+                    </div>
+                </div>
+                <div class="bet-action-buttons">
+                    <!-- Link to the edit bet page -->
+                    <a href="/editar_apuesta/{{ partido_id }}/{{ apuesta_id }}" class="bet-action-btn edit"
+                        title="Editar Apuesta">
+                        <i class="fa-solid fa-pen"></i>
+                    </a>
+                    <!-- Botón eliminar apuesta -->
+                    <button class="bet-action-btn delete" title="Eliminar Apuesta"
+                        onclick="confirmarAccion('/borrar_apuesta/{{ partido_id }}/{{ apuesta_id }}', 'Eliminar apuesta de {{ a.nombre }} (${{ a.dinero }}, {{ a.marcador }})?')">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="no-bets-text">Ninguna apuesta aún</p>
+            {% endif %}
+        </div>
+
+        <!-- Bet CTA Button -->
+        <a href="/apostar/{{ partido_id }}" class="btn btn-primary btn-bet-action">
+            <i class="fa-solid fa-dice"></i> Apostar en este Partido
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<!-- Empty state when no matches registered -->
+<div class="empty-dashboard">
+    <div class="empty-icon">
+        <i class="fa-solid fa-calendar-xmark"></i>
+    </div>
+    <h3>No hay partidos registrados</h3>
+    <p>Comienza agregando un partido del Mundial 2026 para que los apostadores puedan registrar sus predicciones.</p>
+    <a href="/ingresar" class="btn btn-primary">
+        <i class="fa-solid fa-plus-circle"></i> Agregar Primer Partido
+    </a>
+</div>
+{% endif %}
+{% endblock %}

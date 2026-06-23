@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}Ingresar Partido - Apuestas Mundial 2026 SEM{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container-card {
+        max-width: 550px;
+        margin: 2rem auto;
+    }
+
+    .form-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .form-title {
+        font-size: 1.75rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, #fff 30%, var(--accent-gold) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .form-actions .btn {
+        flex: 1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card form-container-card">
+    <div class="form-header">
+        <h2 class="form-title">🏟️ Registrar Partido</h2>
+        <p style="color: var(--text-secondary); font-size: 0.95rem;">Añade un nuevo encuentro al listado del Mundial 2026</p>
+    </div>
+
+    <!-- Match registration form -->
+    <form method="POST" id="partidoForm" onsubmit="return validarPartido();">
+        <div class="input-group">
+            <label for="equipo1">Equipo Local / Selección 1</label>
+            <div class="input-wrapper">
+                <i class="fa-solid fa-shield-halved input-icon" style="color: var(--accent-green);"></i>
+                <input type="text" id="equipo1" name="equipo1" class="input-control" placeholder="Ej: Colombia..." required autocomplete="off">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="equipo2">Equipo Visitante / Selección 2</label>
+            <div class="input-wrapper">
+                <i class="fa-solid fa-shield-halved input-icon" style="color: var(--accent-danger);"></i>
+                <input type="text" id="equipo2" name="equipo2" class="input-control" placeholder="Ej: Argentina..." required autocomplete="off">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="fecha">Fecha del Partido</label>
+            <div class="input-wrapper">
+                <i class="fa-regular fa-calendar-days input-icon"></i>
+                <input type="text" id="fecha" name="fecha" class="input-control" placeholder="Ej: 23/06/2026..." required>
+            </div>
+            <p style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 0.25rem;">Formato recomendado: DD/MM/AAAA (ej. 23/06/2026).</p>
+        </div>
+
+        <div class="input-group">
+            <label for="hora">Hora del Partido</label>
+            <div class="input-wrapper">
+                <i class="fa-regular fa-clock input-icon"></i>
+                <input type="text" id="hora" name="hora" class="input-control" placeholder="Ej: 9:00 PM..." required>
+            </div>
+            <p style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 0.25rem;">Ejemplo: 3:00 PM o 18:00.</p>
+        </div>
+
+        <div class="input-group">
+            <label for="lugar">Estadio / Ciudad</label>
+            <div class="input-wrapper">
+                <i class="fa-solid fa-map-location-dot input-icon"></i>
+                <input type="text" id="lugar" name="lugar" class="input-control" placeholder="Ej: Estadio Azteca, CDMX..." required>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="/" class="btn btn-secondary">
+                <i class="fa-solid fa-xmark"></i> Cancelar
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-floppy-disk"></i> Registrar Partido
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function validarPartido() {
+        const equipo1 = document.getElementById('equipo1').value.trim();
+        const equipo2 = document.getElementById('equipo2').value.trim();
+        const fecha = document.getElementById('fecha').value.trim();
+        const hora = document.getElementById('hora').value.trim();
+        const lugar = document.getElementById('lugar').value.trim();
+
+        if (equipo1 === equipo2) {
+            alert('¡Una selección no puede jugar contra sí misma!');
+            return false;
+        }
+
+        if (!equipo1 || !equipo2 || !fecha || !hora || !lugar) {
+            alert('Por favor, completa todos los campos del partido.');
+            return false;
+        }
+
+        return true;
+    }
+</script>
+{% endblock %}

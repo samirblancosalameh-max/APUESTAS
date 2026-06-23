@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+
+{% block title %}Registrar Apuesta - Apuestas Mundial 2026 SEM{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container-card {
+        max-width: 550px;
+        margin: 2rem auto;
+    }
+
+    .form-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .form-title {
+        font-size: 1.75rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, #fff 30%, var(--accent-green) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .match-scoreboard-preview {
+        background-color: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        text-align: center;
+    }
+
+    .scoreboard-teams {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--text-primary);
+    }
+
+    .scoreboard-vs {
+        color: var(--accent-gold);
+        font-size: 0.8rem;
+        background-color: rgba(245, 158, 11, 0.08);
+        border: 1px solid rgba(245, 158, 11, 0.2);
+        padding: 0.15rem 0.4rem;
+        border-radius: 20px;
+    }
+
+    .scoreboard-meta {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .scoreboard-meta span {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .form-actions .btn {
+        flex: 1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card form-container-card">
+    <div class="form-header">
+        <h2 class="form-title">⚽ Registrar Apuesta</h2>
+        <p style="color: var(--text-secondary); font-size: 0.95rem;">Ingresa tus datos y pronóstico para este encuentro</p>
+    </div>
+
+    <!-- Match scoreboard detail -->
+    <div class="match-scoreboard-preview">
+        <div class="scoreboard-teams">
+            <span>{{ partido.equipo1 }}</span>
+            <span class="scoreboard-vs">VS</span>
+            <span>{{ partido.equipo2 }}</span>
+        </div>
+        <div class="scoreboard-meta">
+            <span><i class="fa-regular fa-calendar"></i> {{ partido.fecha }}</span>
+            <span><i class="fa-regular fa-clock"></i> {{ partido.hora }}</span>
+            <span><i class="fa-solid fa-map-pin"></i> {{ partido.lugar }}</span>
+        </div>
+    </div>
+
+    <!-- Bet Form -->
+    <form method="POST" id="apuestaForm" onsubmit="return validarApuesta();">
+        <div class="input-group">
+            <label for="nombre">Nombre Completo / Apodo</label>
+            <div class="input-wrapper">
+                <i class="fa-solid fa-user input-icon"></i>
+                <input type="text" id="nombre" name="nombre" class="input-control" placeholder="Ej: Samir..." required autocomplete="name">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="dinero">Monto a Apostar ($)</label>
+            <div class="input-wrapper">
+                <i class="fa-solid fa-sack-dollar input-icon"></i>
+                <input type="number" id="dinero" name="dinero" class="input-control" placeholder="Ej: 5000..." min="1" required>
+            </div>
+            <p id="dineroError" style="color: var(--accent-danger); font-size: 0.8rem; margin-top: 0.25rem; display: none;">El dinero debe ser un número entero mayor a 0.</p>
+        </div>
+
+        <div class="input-group">
+            <label for="marcador">Marcador Estimado (Goles Equipo 1 - Goles Equipo 2)</label>
+            <div class="input-wrapper">
+                <i class="fa-solid fa-futbol input-icon"></i>
+                <input type="text" id="marcador" name="marcador" class="input-control" placeholder="Ej: 2-1 (Equipo 1 vs Equipo 2)..." required pattern="\d+-\d+" title="Formato requerido: X-Y (ej: 2-1, 0-0)">
+            </div>
+            <p style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 0.25rem;">Usa el formato número-número (por ejemplo: 3-1 o 0-2).</p>
+        </div>
+
+        <div class="form-actions">
+            <a href="/" class="btn btn-secondary">
+                <i class="fa-solid fa-xmark"></i> Cancelar
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-check"></i> Registrar Apuesta
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function validarApuesta() {
+        const dineroInput = document.getElementById('dinero');
+        const dineroErr = document.getElementById('dineroError');
+        const dineroVal = parseInt(dineroInput.value, 10);
+
+        if (isNaN(dineroVal) || dineroVal <= 0) {
+            dineroErr.style.display = 'block';
+            dineroInput.focus();
+            return false;
+        } else {
+            dineroErr.style.display = 'none';
+        }
+
+        const marcadorInput = document.getElementById('marcador');
+        const marcadorRegex = /^\d+-\d+$/;
+        if (!marcadorRegex.test(marcadorInput.value.trim())) {
+            alert('Formato de marcador incorrecto. Por favor usa el formato X-Y (ej: 2-1)');
+            marcadorInput.focus();
+            return false;
+        }
+
+        return true;
+    }
+</script>
+{% endblock %}
